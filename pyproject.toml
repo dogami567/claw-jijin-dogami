@@ -12,12 +12,18 @@ dependencies = [
   "fastapi>=0.115,<1.0",
   "uvicorn>=0.30,<1.0",
   "pydantic>=2.7,<3.0",
+  "pandas>=2.2,<3.0",
 ]
 
 [project.optional-dependencies]
 dev = [
   "httpx>=0.27,<1.0",
   "pytest>=8.0,<9.0",
+]
+data = [
+  "akshare>=1.18",
+  "efinance>=0.5.5",
+  "xalpha>=0.12",
 ]
 
 [tool.setuptools]

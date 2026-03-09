@@ -8,6 +8,9 @@ def get_capabilities() -> ServiceCapabilities:
         version=__version__,
         supported_channels=["web", "onebot"],
         sync_endpoints=[
+            "/v1/providers/status",
+            "/v1/fund/snapshot/live",
+            "/v1/fund/history",
             "/v1/portfolio/analyze",
             "/v1/event/impact",
             "/v1/replay/context",
