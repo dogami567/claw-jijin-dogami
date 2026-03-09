@@ -331,3 +331,50 @@ flowchart TD
 `claw-jijin-dogami` 的目标是做一个：
 
 > **围绕国内基金个人投资场景，能算清、能解释、能回放、能验证的 AI 辅助分析系统。**
+
+## 13. Current API Surface
+
+As of `2026-03-09`, the service already exposes a usable provider-backed market-data slice for `clawdbot` and future channel adapters:
+
+- `GET /v1/providers/status`
+  - Returns provider availability, implemented capabilities, and the fallback order.
+- `POST /v1/fund/snapshot/live`
+  - Returns a normalized live-ish fund snapshot.
+  - Current implementation prefers `efinance` and gracefully falls back when a requested provider is unavailable.
+- `POST /v1/fund/history`
+  - Returns normalized historical NAV points for a fund code.
+  - This is the main building block for replay, backtest, and cutoff validation.
+- `POST /v1/fund/nav/point-in-time`
+  - Returns the latest NAV point visible on or before a requested cutoff date.
+  - This is the minimal contract needed for point-in-time replay evaluation.
+
+## 14. Provider Matrix
+
+Current adapter status:
+
+| Provider | Availability check | Live snapshot | History | Point-in-time use |
+| --- | --- | --- | --- | --- |
+| `efinance` | Implemented | Implemented | Implemented | Implemented via history |
+| `akshare` | Implemented | Reserved | Reserved | Reserved |
+| `xalpha` | Implemented | Reserved | Reserved | Reserved for portfolio analytics |
+
+Notes:
+
+- Providers are imported lazily with optional imports, so the service can start even if some packages are not installed.
+- The default fallback order is currently `efinance -> akshare -> xalpha`.
+- `clawdbot` should call `GET /v1/providers/status` first if it wants to decide whether to expose live queries, replay queries, or both.
+
+## 15. Clawdbot Integration Hint
+
+Recommended orchestration sequence for `clawdbot`:
+
+1. Call `GET /v1/capabilities`
+2. Call `GET /v1/providers/status`
+3. If the user asks for current fund data, call `POST /v1/fund/snapshot/live`
+4. If the user asks for historical validation, call `POST /v1/fund/history`
+5. If the user asks “what could the system have seen at time T”, call `POST /v1/fund/nav/point-in-time`
+
+This keeps the conversation layer thin and preserves Scheme A:
+
+- `claw-jijin-dogami` owns finance-domain logic and provider normalization
+- `clawdbot` owns conversation, async orchestration, and channel formatting

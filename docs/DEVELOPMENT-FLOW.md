@@ -152,3 +152,22 @@
 
 再接入第一批真实基金数据能力。
 
+
+## 6. Current Delivery Snapshot (`2026-03-09`)
+
+Already landed:
+
+- provider registry with lazy optional imports
+- `efinance` live snapshot adapter
+- `efinance` history adapter
+- provider status endpoint
+- normalized fund history endpoint
+- point-in-time NAV endpoint for replay validation
+
+Suggested next build order:
+
+1. Persist provider snapshots locally
+2. Add provider caching / refresh policy
+3. Feed point-in-time NAV into replay and backtest jobs
+4. Introduce xalpha-backed portfolio analytics
+5. Add clawdbot-side orchestration for async replay tasks

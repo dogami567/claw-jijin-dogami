@@ -529,3 +529,37 @@ AI 不可以：
 - 页面和 OneBot 共享同一套后端能力
 - 历史回放是系统可信度的核心能力，不是附属功能
 
+
+## 13. Provider Adapter Layer (Implemented)
+
+The current service now has a dedicated provider adapter layer under `src/claw_jijin_dogami/providers/`.
+
+Implemented design principles:
+
+- optional imports with lazy loading
+- normalized service models instead of leaking provider-specific table schemas
+- explicit capability flags per provider
+- ordered fallback across providers
+- point-in-time access built on top of normalized history
+
+### 13.1 Runtime Provider Endpoints
+
+- `GET /v1/providers/status`
+- `POST /v1/fund/snapshot/live`
+- `POST /v1/fund/history`
+- `POST /v1/fund/nav/point-in-time`
+
+### 13.2 Why This Matters
+
+This adapter layer is the bridge between:
+
+- raw data providers such as `efinance`, `AKShare`, and `xalpha`
+- the replay / evaluation pipeline
+- the multi-channel conversation layer in `clawdbot`
+
+It also gives us a stable intermediate contract before we add:
+
+- persistent snapshots
+- provider caching
+- walk-forward backtests
+- richer xalpha-based portfolio analytics

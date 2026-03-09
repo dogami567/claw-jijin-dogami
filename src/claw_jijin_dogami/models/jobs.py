@@ -23,6 +23,9 @@ class ReplayJobRequest(BaseModel):
     cutoff_ts: datetime
     horizons: list[int] = Field(default_factory=lambda: [5, 20, 60])
     benchmark_set: list[str] = Field(default_factory=lambda: ["buy_hold", "fixed_dca"])
+    fund_symbols: list[str] = Field(default_factory=list)
+    provider: str | None = None
+    lookback_days: int = Field(default=30, ge=1, le=3650)
 
 
 class BacktestJobRequest(BaseModel):
@@ -50,4 +53,3 @@ class AsyncJobRecord(BaseModel):
     updated_at: datetime
     progress: float = Field(ge=0.0, le=1.0)
     result: dict[str, Any] | None = None
-

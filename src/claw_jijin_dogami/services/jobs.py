@@ -2,6 +2,7 @@ from datetime import UTC, datetime
 from threading import Lock
 from uuid import uuid4
 
+from claw_jijin_dogami.models.fund import FundPointInTimeRequest
 from claw_jijin_dogami.models.jobs import (
     AsyncJobRecord,
     BacktestJobRequest,
@@ -10,6 +11,7 @@ from claw_jijin_dogami.models.jobs import (
     JobStatus,
     ReplayJobRequest,
 )
+from claw_jijin_dogami.services.fund import get_point_in_time_nav
 
 _jobs: dict[str, AsyncJobRecord] = {}
 _lock = Lock()
@@ -18,6 +20,7 @@ _lock = Lock()
 def enqueue_replay_job(request: ReplayJobRequest) -> JobAcceptedResponse:
     now = datetime.now(UTC)
     job_id = f"replay-{uuid4().hex[:12]}"
+    observed_navs, nav_errors = _build_replay_nav_context(request)
     record = AsyncJobRecord(
         job_id=job_id,
         kind=JobKind.replay,
@@ -31,11 +34,16 @@ def enqueue_replay_job(request: ReplayJobRequest) -> JobAcceptedResponse:
             "cutoff_ts": request.cutoff_ts.isoformat(),
             "horizons": request.horizons,
             "benchmark_set": request.benchmark_set,
+            "fund_symbols": request.fund_symbols,
+            "provider": request.provider,
+            "lookback_days": request.lookback_days,
+            "observed_navs": observed_navs,
+            "nav_errors": nav_errors,
             "evaluation_metrics": {
                 "direction_accuracy_20d": 0.0,
                 "excess_return_20d": 0.0,
             },
-            "note": "当前为接口骨架实现，后续将替换为真实 point-in-time 回放执行器。",
+            "note": "Current replay job is a contract-first implementation; real point-in-time execution will replace the stub later.",
         },
     )
     with _lock:
@@ -71,7 +79,7 @@ def enqueue_backtest_job(request: BacktestJobRequest) -> JobAcceptedResponse:
                 "max_drawdown": 0.0,
                 "benchmark_return": 0.0,
             },
-            "note": "当前为接口骨架实现，后续将接入真实回测引擎。",
+            "note": "Current backtest job is a contract-first implementation; a real execution engine will replace the stub later.",
         },
     )
     with _lock:
@@ -87,3 +95,32 @@ def enqueue_backtest_job(request: BacktestJobRequest) -> JobAcceptedResponse:
 def get_job(job_id: str) -> AsyncJobRecord | None:
     with _lock:
         return _jobs.get(job_id)
+
+
+def _build_replay_nav_context(request: ReplayJobRequest) -> tuple[list[dict], list[dict]]:
+    observed_navs: list[dict] = []
+    nav_errors: list[dict] = []
+
+    for symbol in request.fund_symbols:
+        try:
+            response = get_point_in_time_nav(
+                FundPointInTimeRequest(
+                    symbol=symbol,
+                    cutoff_date=request.cutoff_ts.date(),
+                    provider=request.provider,
+                    lookback_days=request.lookback_days,
+                    allow_fallback=True,
+                )
+            )
+            observed_navs.append(
+                {
+                    "symbol": response.symbol,
+                    "provider_used": response.provider_used,
+                    "cutoff_date": response.cutoff_date.isoformat(),
+                    "point": response.point.model_dump(mode="json"),
+                }
+            )
+        except Exception as exc:
+            nav_errors.append({"symbol": symbol, "error": str(exc)})
+
+    return observed_navs, nav_errors
