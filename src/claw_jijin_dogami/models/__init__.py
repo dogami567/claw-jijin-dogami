@@ -9,6 +9,11 @@ from .jobs import (
     ReplayJobRequest,
 )
 from .replay import PublishedSnapshot, ReplayContextRequest, ReplayContextResponse
+from .recommendation import (
+    GeneratedRecommendation,
+    RecommendationGenerateRequest,
+    RecommendationGenerateResponse,
+)
 from .sync import SyncPlanRequest, SyncPlanResponse, SyncProvider, SyncTask, SyncTaskType
 from .portfolio import (
     AlertSeverity,
@@ -44,9 +49,12 @@ __all__ = [
     "PortfolioRecommendationSummary",
     "PortfolioSummary",
     "PublishedSnapshot",
+    "RecommendationGenerateRequest",
+    "RecommendationGenerateResponse",
     "ReplayJobRequest",
     "ReplayContextRequest",
     "ReplayContextResponse",
+    "GeneratedRecommendation",
     "RenderTarget",
     "SyncPlanRequest",
     "SyncPlanResponse",

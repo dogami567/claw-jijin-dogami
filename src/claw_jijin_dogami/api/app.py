@@ -5,6 +5,7 @@ from .routes.health import router as health_router
 from .routes.integration import router as integration_router
 from .routes.jobs import router as jobs_router
 from .routes.portfolio import router as portfolio_router
+from .routes.recommendation import router as recommendation_router
 from .routes.replay import router as replay_router
 from .routes.sync import router as sync_router
 
@@ -20,6 +21,7 @@ def create_app() -> FastAPI:
     app.include_router(integration_router)
     app.include_router(jobs_router)
     app.include_router(portfolio_router)
+    app.include_router(recommendation_router)
     app.include_router(replay_router)
     app.include_router(sync_router)
     return app
