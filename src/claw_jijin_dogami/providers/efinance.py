@@ -38,7 +38,8 @@ class EfinanceProviderAdapter(BaseProviderAdapter):
             raise ProviderDataError(self.name, f"no data returned for symbol '{symbol}'")
 
         base_info = base_info_records[0] if base_info_records else {}
-        latest_history = history_records[-1] if history_records else {}
+        sorted_history_records = self._sort_history_records(history_records)
+        latest_history = sorted_history_records[-1] if sorted_history_records else {}
 
         resolved_symbol = str(
             first_present(
@@ -98,7 +99,7 @@ class EfinanceProviderAdapter(BaseProviderAdapter):
         if fund_namespace is None:
             raise ProviderDataError(self.name, "missing fund namespace")
 
-        history_records = self._get_history_records(fund_namespace, symbol)
+        history_records = self._sort_history_records(self._get_history_records(fund_namespace, symbol))
         if not history_records:
             raise ProviderDataError(self.name, f"no history returned for symbol '{symbol}'")
 
@@ -149,3 +150,12 @@ class EfinanceProviderAdapter(BaseProviderAdapter):
             return records_from_tabular(get_quote_history(symbol))
         except Exception as exc:
             raise ProviderDataError(self.name, f"failed to load history: {exc}") from exc
+
+    def _sort_history_records(self, records: list[dict]) -> list[dict]:
+        return sorted(
+            records,
+            key=lambda record: (
+                to_date(pick_field(record, "日期", "净值日期", "date")) is None,
+                to_date(pick_field(record, "日期", "净值日期", "date")) or date.min,
+            ),
+        )

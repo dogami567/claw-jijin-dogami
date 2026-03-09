@@ -31,16 +31,16 @@ def test_efinance_adapter_normalizes_snapshot_and_history(monkeypatch) -> None:
             get_quote_history=lambda symbol: FakeFrame(
                 [
                     {
-                        "日期": "2026-03-07",
-                        "单位净值": "1.220",
-                        "累计净值": "2.440",
-                        "日增长率": "0.11%",
-                    },
-                    {
                         "日期": "2026-03-08",
                         "单位净值": "1.234",
                         "累计净值": "2.468",
                         "日增长率": "0.56%",
+                    },
+                    {
+                        "日期": "2026-03-07",
+                        "单位净值": "1.220",
+                        "累计净值": "2.440",
+                        "日增长率": "0.11%",
                     },
                 ]
             ),
@@ -60,3 +60,50 @@ def test_efinance_adapter_normalizes_snapshot_and_history(monkeypatch) -> None:
     assert len(history) == 1
     assert history[0].date.isoformat() == "2026-03-08"
     assert history[0].unit_nav == 1.234
+
+
+def test_efinance_adapter_sorts_history_before_point_selection(monkeypatch) -> None:
+    adapter = EfinanceProviderAdapter()
+    fake_module = SimpleNamespace(
+        fund=SimpleNamespace(
+            get_base_info=lambda symbols: FakeFrame(
+                [
+                    {
+                        "基金代码": symbols[0],
+                        "基金简称": "测试基金",
+                        "净值更新日期": "2026-03-08",
+                    }
+                ]
+            ),
+            get_quote_history=lambda symbol: FakeFrame(
+                [
+                    {
+                        "日期": "2026-03-08",
+                        "单位净值": "1.234",
+                        "累计净值": "2.468",
+                        "日增长率": "0.56%",
+                    },
+                    {
+                        "日期": "2026-03-06",
+                        "单位净值": "1.200",
+                        "累计净值": "2.400",
+                        "日增长率": "0.10%",
+                    },
+                    {
+                        "日期": "2026-03-07",
+                        "单位净值": "1.220",
+                        "累计净值": "2.440",
+                        "日增长率": "0.11%",
+                    },
+                ]
+            ),
+        )
+    )
+    monkeypatch.setattr(adapter, "load_module", lambda: fake_module)
+
+    snapshot = adapter.fetch_fund_snapshot("000001")
+    history = adapter.fetch_fund_history("000001", limit=2)
+
+    assert snapshot.as_of == datetime(2026, 3, 8, 0, 0, 0)
+    assert history[0].date.isoformat() == "2026-03-07"
+    assert history[1].date.isoformat() == "2026-03-08"
