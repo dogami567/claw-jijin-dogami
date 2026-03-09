@@ -236,3 +236,66 @@ def test_fund_history_returns_503_when_provider_is_unavailable(monkeypatch) -> N
 
     assert response.status_code == 503
     assert "unavailable" in response.json()["detail"]
+
+
+def test_point_in_time_nav_returns_latest_point_before_cutoff(monkeypatch) -> None:
+    _patch_registry(
+        monkeypatch,
+        {
+            "efinance": FakeProvider(
+                "efinance",
+                capabilities=ProviderCapabilities(historical_nav=True),
+                history=[
+                    FundHistoryPoint(date=date(2026, 3, 5), unit_nav=1.10),
+                    FundHistoryPoint(date=date(2026, 3, 7), unit_nav=1.12),
+                    FundHistoryPoint(date=date(2026, 3, 9), unit_nav=1.15),
+                ],
+            ),
+        },
+    )
+
+    response = client.post(
+        "/v1/fund/nav/point-in-time",
+        json={
+            "symbol": "000001",
+            "provider": "efinance",
+            "cutoff_date": "2026-03-08",
+            "lookback_days": 10,
+            "allow_fallback": False,
+        },
+    )
+
+    assert response.status_code == 200
+    payload = response.json()
+    assert payload["provider_used"] == "efinance"
+    assert payload["point"]["date"] == "2026-03-07"
+    assert payload["point"]["unit_nav"] == 1.12
+
+
+def test_point_in_time_nav_returns_502_when_window_has_no_points(monkeypatch) -> None:
+    _patch_registry(
+        monkeypatch,
+        {
+            "efinance": FakeProvider(
+                "efinance",
+                capabilities=ProviderCapabilities(historical_nav=True),
+                history=[
+                    FundHistoryPoint(date=date(2026, 3, 1), unit_nav=1.01),
+                ],
+            ),
+        },
+    )
+
+    response = client.post(
+        "/v1/fund/nav/point-in-time",
+        json={
+            "symbol": "000001",
+            "provider": "efinance",
+            "cutoff_date": "2026-03-08",
+            "lookback_days": 2,
+            "allow_fallback": False,
+        },
+    )
+
+    assert response.status_code == 502
+    assert "no point-in-time nav found" in response.json()["detail"]

@@ -11,6 +11,7 @@ def get_capabilities() -> ServiceCapabilities:
             "/v1/providers/status",
             "/v1/fund/snapshot/live",
             "/v1/fund/history",
+            "/v1/fund/nav/point-in-time",
             "/v1/portfolio/analyze",
             "/v1/event/impact",
             "/v1/replay/context",

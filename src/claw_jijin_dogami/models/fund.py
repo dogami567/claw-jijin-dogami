@@ -63,3 +63,22 @@ class FundHistoryResponse(BaseModel):
     symbol: str
     point_count: int
     points: list[FundHistoryPoint]
+
+
+class FundPointInTimeRequest(BaseModel):
+    model_config = ConfigDict(str_strip_whitespace=True)
+
+    symbol: str = Field(min_length=1)
+    cutoff_date: date
+    provider: str | None = None
+    lookback_days: int = Field(default=30, ge=1, le=3650)
+    allow_fallback: bool = True
+
+
+class FundPointInTimeResponse(BaseModel):
+    provider_requested: str | None = None
+    provider_used: str
+    symbol: str
+    cutoff_date: date
+    lookback_days: int
+    point: FundHistoryPoint

@@ -1,6 +1,10 @@
+from datetime import timedelta
+
 from claw_jijin_dogami.models.fund import (
     FundHistoryRequest,
     FundHistoryResponse,
+    FundPointInTimeRequest,
+    FundPointInTimeResponse,
     FundSnapshotLiveRequest,
     FundSnapshotLiveResponse,
 )
@@ -85,6 +89,34 @@ def get_fund_history(request: FundHistoryRequest) -> FundHistoryResponse:
             last_error = exc
 
     _raise_last_provider_error(last_error)
+
+
+def get_point_in_time_nav(request: FundPointInTimeRequest) -> FundPointInTimeResponse:
+    history = get_fund_history(
+        FundHistoryRequest(
+            symbol=request.symbol,
+            provider=request.provider,
+            start_date=request.cutoff_date - timedelta(days=request.lookback_days),
+            end_date=request.cutoff_date,
+            limit=min(1000, max(60, request.lookback_days * 2)),
+            allow_fallback=request.allow_fallback,
+        )
+    )
+
+    if not history.points:
+        raise ProviderDataError(
+            history.provider_used,
+            f"no point-in-time nav found for symbol '{request.symbol}' before {request.cutoff_date.isoformat()}",
+        )
+
+    return FundPointInTimeResponse(
+        provider_requested=request.provider,
+        provider_used=history.provider_used,
+        symbol=request.symbol.strip(),
+        cutoff_date=request.cutoff_date,
+        lookback_days=request.lookback_days,
+        point=history.points[-1],
+    )
 
 
 def _resolve_provider_names(
