@@ -8,6 +8,7 @@ from .jobs import (
     ReplayJobRequest,
 )
 from .replay import PublishedSnapshot, ReplayContextRequest, ReplayContextResponse
+from .sync import SyncPlanRequest, SyncPlanResponse, SyncProvider, SyncTask, SyncTaskType
 from .portfolio import (
     AlertSeverity,
     PortfolioAlert,
@@ -42,4 +43,9 @@ __all__ = [
     "ReplayJobRequest",
     "ReplayContextRequest",
     "ReplayContextResponse",
+    "SyncPlanRequest",
+    "SyncPlanResponse",
+    "SyncProvider",
+    "SyncTask",
+    "SyncTaskType",
 ]
