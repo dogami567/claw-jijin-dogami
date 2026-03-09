@@ -7,6 +7,7 @@ from .jobs import (
     JobStatus,
     ReplayJobRequest,
 )
+from .replay import PublishedSnapshot, ReplayContextRequest, ReplayContextResponse
 from .portfolio import (
     AlertSeverity,
     PortfolioAlert,
@@ -37,5 +38,8 @@ __all__ = [
     "PortfolioRecommendationAction",
     "PortfolioRecommendationSummary",
     "PortfolioSummary",
+    "PublishedSnapshot",
     "ReplayJobRequest",
+    "ReplayContextRequest",
+    "ReplayContextResponse",
 ]
