@@ -1,5 +1,6 @@
 from fastapi import FastAPI
 
+from .routes.capabilities import router as capabilities_router
 from .routes.event import router as event_router
 from .routes.health import router as health_router
 from .routes.integration import router as integration_router
@@ -16,6 +17,7 @@ def create_app() -> FastAPI:
         version="0.1.0",
         description="Independent fund analysis service for clawdbot.",
     )
+    app.include_router(capabilities_router)
     app.include_router(event_router)
     app.include_router(health_router)
     app.include_router(integration_router)

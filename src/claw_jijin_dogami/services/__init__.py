@@ -1,3 +1,4 @@
+from .capabilities import get_capabilities
 from .event import analyze_event_impact
 from .integration import render_for_clawdbot
 from .jobs import enqueue_backtest_job, enqueue_replay_job, get_job
@@ -14,6 +15,7 @@ __all__ = [
     "enqueue_backtest_job",
     "enqueue_replay_job",
     "generate_recommendation",
+    "get_capabilities",
     "get_job",
     "render_for_clawdbot",
 ]

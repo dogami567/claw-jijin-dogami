@@ -1,3 +1,4 @@
+from .capabilities import ServiceCapabilities
 from .event import EventImpactRequest, EventImpactResponse, EventPayload, FundExposureInput, ImpactedFund
 from .integration import ChannelType, ClawdbotRenderRequest, ClawdbotRenderResponse, RenderTarget
 from .jobs import (
@@ -56,6 +57,7 @@ __all__ = [
     "ReplayContextResponse",
     "GeneratedRecommendation",
     "RenderTarget",
+    "ServiceCapabilities",
     "SyncPlanRequest",
     "SyncPlanResponse",
     "SyncProvider",
