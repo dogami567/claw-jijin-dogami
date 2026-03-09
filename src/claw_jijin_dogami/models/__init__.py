@@ -1,4 +1,5 @@
 from .event import EventImpactRequest, EventImpactResponse, EventPayload, FundExposureInput, ImpactedFund
+from .integration import ChannelType, ClawdbotRenderRequest, ClawdbotRenderResponse, RenderTarget
 from .jobs import (
     AsyncJobRecord,
     BacktestJobRequest,
@@ -24,6 +25,9 @@ __all__ = [
     "AlertSeverity",
     "AsyncJobRecord",
     "BacktestJobRequest",
+    "ChannelType",
+    "ClawdbotRenderRequest",
+    "ClawdbotRenderResponse",
     "EventImpactRequest",
     "EventImpactResponse",
     "EventPayload",
@@ -43,6 +47,7 @@ __all__ = [
     "ReplayJobRequest",
     "ReplayContextRequest",
     "ReplayContextResponse",
+    "RenderTarget",
     "SyncPlanRequest",
     "SyncPlanResponse",
     "SyncProvider",

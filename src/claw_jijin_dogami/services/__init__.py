@@ -1,4 +1,5 @@
 from .event import analyze_event_impact
+from .integration import render_for_clawdbot
 from .jobs import enqueue_backtest_job, enqueue_replay_job, get_job
 from .portfolio import analyze_portfolio
 from .replay import build_replay_context
@@ -12,4 +13,5 @@ __all__ = [
     "enqueue_backtest_job",
     "enqueue_replay_job",
     "get_job",
+    "render_for_clawdbot",
 ]
