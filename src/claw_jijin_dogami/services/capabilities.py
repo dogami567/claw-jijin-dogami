@@ -9,6 +9,7 @@ def get_capabilities() -> ServiceCapabilities:
         supported_channels=["web", "onebot"],
         sync_endpoints=[
             "/v1/providers/status",
+            "/v1/fund/search",
             "/v1/fund/snapshot/live",
             "/v1/fund/history",
             "/v1/fund/nav/point-in-time",

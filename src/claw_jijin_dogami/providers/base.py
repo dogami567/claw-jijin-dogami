@@ -4,7 +4,7 @@ from datetime import date, datetime
 from importlib import import_module
 from typing import Any
 
-from claw_jijin_dogami.models.fund import FundHistoryPoint, FundLiveSnapshot
+from claw_jijin_dogami.models.fund import FundHistoryPoint, FundLiveSnapshot, FundSearchCandidate
 from claw_jijin_dogami.models.providers import ProviderCapabilities, ProviderStatus
 
 
@@ -104,6 +104,9 @@ class BaseProviderAdapter:
         limit: int | None = None,
     ) -> list[FundHistoryPoint]:
         raise ProviderCapabilityError(self.name, "historical_nav")
+
+    def search_funds(self, query: str, limit: int = 10) -> list[FundSearchCandidate]:
+        raise ProviderCapabilityError(self.name, "fund_catalog")
 
 
 def records_from_tabular(payload: Any) -> list[dict[str, Any]]:

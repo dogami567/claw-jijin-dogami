@@ -82,3 +82,30 @@ class FundPointInTimeResponse(BaseModel):
     cutoff_date: date
     lookback_days: int
     point: FundHistoryPoint
+
+
+class FundSearchCandidate(BaseModel):
+    symbol: str
+    fund_name: str
+    fund_type: str | None = None
+    provider: str
+    score: float
+    match_reason: str
+    raw: dict[str, Any] = Field(default_factory=dict)
+
+
+class FundSearchRequest(BaseModel):
+    model_config = ConfigDict(str_strip_whitespace=True)
+
+    query: str = Field(min_length=1)
+    provider: str | None = None
+    limit: int = Field(default=10, ge=1, le=50)
+    allow_fallback: bool = True
+
+
+class FundSearchResponse(BaseModel):
+    provider_requested: str | None = None
+    provider_used: str
+    query: str
+    candidate_count: int
+    candidates: list[FundSearchCandidate]

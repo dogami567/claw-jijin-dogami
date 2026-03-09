@@ -5,6 +5,8 @@ from claw_jijin_dogami.models.fund import (
     FundHistoryResponse,
     FundPointInTimeRequest,
     FundPointInTimeResponse,
+    FundSearchRequest,
+    FundSearchResponse,
     FundSnapshotLiveRequest,
     FundSnapshotLiveResponse,
 )
@@ -91,6 +93,41 @@ def get_fund_history(request: FundHistoryRequest) -> FundHistoryResponse:
     _raise_last_provider_error(last_error)
 
 
+def search_funds(request: FundSearchRequest) -> FundSearchResponse:
+    provider_map = provider_registry.get_provider_registry()
+    provider_names = _resolve_catalog_provider_names(
+        provider_map=provider_map,
+        requested_provider=request.provider,
+        allow_fallback=request.allow_fallback,
+    )
+
+    last_error: Exception | None = None
+    query = request.query.strip()
+
+    for provider_name in provider_names:
+        provider = provider_map[provider_name]
+        if not provider.is_available():
+            last_error = ProviderUnavailableError(provider.name, provider.unavailable_detail())
+            continue
+        if not provider.capabilities.fund_catalog:
+            last_error = ProviderCapabilityError(provider.name, "fund_catalog")
+            continue
+
+        try:
+            candidates = provider.search_funds(query=query, limit=request.limit)
+            return FundSearchResponse(
+                provider_requested=request.provider,
+                provider_used=provider.name,
+                query=query,
+                candidate_count=len(candidates),
+                candidates=candidates,
+            )
+        except (ProviderDataError, ProviderUnavailableError, ProviderCapabilityError) as exc:
+            last_error = exc
+
+    _raise_last_provider_error(last_error)
+
+
 def get_point_in_time_nav(request: FundPointInTimeRequest) -> FundPointInTimeResponse:
     history = get_fund_history(
         FundHistoryRequest(
@@ -137,6 +174,27 @@ def _resolve_provider_names(
     ordered_names.extend(
         name for name in _ordered_provider_names(provider_map) if name != normalized_provider
     )
+    return ordered_names
+
+
+def _resolve_catalog_provider_names(
+    provider_map: dict[str, BaseProviderAdapter],
+    requested_provider: str | None,
+    allow_fallback: bool,
+) -> list[str]:
+    if requested_provider is not None:
+        return _resolve_provider_names(
+            provider_map=provider_map,
+            requested_provider=requested_provider,
+            allow_fallback=allow_fallback,
+        )
+
+    preferred_names = ["akshare", *provider_registry.DEFAULT_PROVIDER_ORDER]
+    ordered_names: list[str] = []
+    for name in preferred_names:
+        if name in provider_map and name not in ordered_names:
+            ordered_names.append(name)
+    ordered_names.extend(name for name in provider_map if name not in ordered_names)
     return ordered_names
 
 

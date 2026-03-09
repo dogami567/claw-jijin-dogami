@@ -23,7 +23,7 @@ class EfinanceProviderAdapter(BaseProviderAdapter):
     capabilities = ProviderCapabilities(
         live_snapshot=True,
         historical_nav=True,
-        fund_catalog=True,
+        fund_catalog=False,
     )
 
     def fetch_fund_snapshot(self, symbol: str) -> FundLiveSnapshot:
